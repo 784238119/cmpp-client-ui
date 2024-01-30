@@ -1,0 +1,14 @@
+software:
+  name: cmpp-utils-ui
+  version: 1.0.0
+
+spring:
+  application:
+    name: ${software.name}
+  task:
+    scheduling:
+      pool:
+        size: 8
+    execution:
+      pool:
+        max-size: 32
