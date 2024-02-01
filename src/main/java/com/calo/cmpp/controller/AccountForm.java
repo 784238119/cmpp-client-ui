@@ -3,6 +3,7 @@ package com.calo.cmpp.controller;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.json.JSONUtil;
 import com.calo.cmpp.config.BusinessThreadPool;
+import com.calo.cmpp.constant.CmppConstant;
 import com.calo.cmpp.domain.CmppAccountTableModel;
 import com.calo.cmpp.domain.CmppChannelAccount;
 import com.calo.cmpp.event.RightClickMouseListener;
@@ -34,7 +35,6 @@ public class AccountForm extends JScrollPane implements MonitorWin {
 
     @Autowired
     private LogMonitor logMonitor;
-    private static final String ACCOUNT_DB_PATH = "account.db";
     @Getter
     private final CmppAccountTableModel cmppAccountTableModel = new CmppAccountTableModel();
     private final JTable table = new JTable(cmppAccountTableModel);
@@ -52,7 +52,8 @@ public class AccountForm extends JScrollPane implements MonitorWin {
     @Order(1)
     @PostConstruct
     private void initChannelAccount() {
-        File file = new File(ACCOUNT_DB_PATH);
+        String accountDbPath = CmppConstant.getAccountDbPath();
+        File file = new File(accountDbPath);
         if (!file.exists()) {
             return;
         }
@@ -67,8 +68,9 @@ public class AccountForm extends JScrollPane implements MonitorWin {
 
     @PreDestroy
     public void saveAccount() {
+        String accountDbPath = CmppConstant.getAccountDbPath();
         Set<String> stringSet = cmppAccountTableModel.getAccountAll().stream().filter(Objects::nonNull).map(JSONUtil::toJsonStr).collect(Collectors.toSet());
-        File file = new File(ACCOUNT_DB_PATH);
+        File file = new File(accountDbPath);
         if (file.exists()) {
             FileUtil.del(file);
         }
