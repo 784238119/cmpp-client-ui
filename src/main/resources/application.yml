@@ -12,3 +12,4 @@ spring:
     execution:
       pool:
         max-size: 32
+

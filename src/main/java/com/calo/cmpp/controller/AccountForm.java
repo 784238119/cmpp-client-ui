@@ -17,24 +17,26 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 @Log4j2
 @Component
 public class AccountForm extends JScrollPane implements MonitorWin {
 
-    @Resource
+    @Autowired
     private LogMonitor logMonitor;
     private static final String ACCOUNT_DB_PATH = "account.db";
     @Getter
@@ -42,6 +44,7 @@ public class AccountForm extends JScrollPane implements MonitorWin {
     private final JTable table = new JTable(cmppAccountTableModel);
 
     {
+        table.setBackground(new Color(238, 238, 238));
         table.setComponentPopupMenu(createPopupMenu());
         this.setViewportView(table);
         this.setBorder(BorderFactory.createEmptyBorder()); // 清除默认边框
@@ -50,6 +53,7 @@ public class AccountForm extends JScrollPane implements MonitorWin {
         initTable();
     }
 
+    @Order(1)
     @PostConstruct
     private void initChannelAccount() {
         File file = new File(ACCOUNT_DB_PATH);
@@ -57,24 +61,26 @@ public class AccountForm extends JScrollPane implements MonitorWin {
             return;
         }
 
-        List<String> stringList = FileUtil.readLines(file, Charset.defaultCharset());
-        for (String string : stringList) {
+        Set<String> hashSetSet = new HashSet<>(FileUtil.readLines(file, Charset.defaultCharset()));
+        for (String string : hashSetSet) {
             CmppChannelAccount bean = JSONUtil.parseObj(string).toBean(CmppChannelAccount.class);
             cmppAccountTableModel.addAccount(bean);
             logMonitor.appendLog("加载账号：" + bean.getChannelName());
         }
-
     }
 
     @PreDestroy
     public void saveAccount() {
-        List<String> stringList = cmppAccountTableModel.getAccountAll().stream().filter(Objects::nonNull).map(JSONUtil::toJsonStr).toList();
+        Set<String> stringSet = cmppAccountTableModel.getAccountAll().stream().filter(Objects::nonNull).map(JSONUtil::toJsonStr).collect(Collectors.toSet());
         File file = new File(ACCOUNT_DB_PATH);
         if (file.exists()) {
-            FileUtil.del(ACCOUNT_DB_PATH);
+            FileUtil.del(file);
+        }
+        if (!file.exists()) {
+            FileUtil.touch(file);
         }
         log.info("channel account db path:{}", file.getAbsolutePath());
-        FileUtil.appendLines(stringList, file, Charset.defaultCharset());
+        FileUtil.appendLines(stringSet, file, Charset.defaultCharset());
     }
 
     @PostConstruct
@@ -87,10 +93,11 @@ public class AccountForm extends JScrollPane implements MonitorWin {
         table.getTableHeader().setReorderingAllowed(false);
         // 设置表头不可点击
         table.getTableHeader().setResizingAllowed(false);
+        table.getTableHeader().setBackground(new Color(238, 238, 238));
         // 设置表头高度
         table.getTableHeader().setPreferredSize(new Dimension(0, 30));
         // 设置字体大小
-        table.setFont(new Font("微软雅黑", Font.PLAIN, 15));
+        table.setFont(new Font("微软雅黑", Font.PLAIN, 13));
         // 设置允许选中内容
         table.setRowSelectionAllowed(true);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -107,7 +114,11 @@ public class AccountForm extends JScrollPane implements MonitorWin {
     private JPopupMenu createPopupMenu() {
         JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem menuItem1 = new JMenuItem("新增账号");
-        menuItem1.addActionListener(e -> new AccountFormDialog(new CmppChannelAccount(), cmppAccountTableModel));
+        menuItem1.addActionListener(e -> {
+            CmppChannelAccount cmppChannelAccount = new CmppChannelAccount();
+            new AccountFormDialog(cmppChannelAccount, cmppAccountTableModel);
+            logMonitor.appendLog("删除账号：" + cmppChannelAccount.getChannelName());
+        });
         popupMenu.add(menuItem1);
 
         JMenuItem menuItem2 = new JMenuItem("修改账号");
@@ -141,9 +152,7 @@ public class AccountForm extends JScrollPane implements MonitorWin {
         popupMenu.add(menuItem3);
 
         JMenuItem menuItem4 = new JMenuItem("刷新账号");
-        menuItem4.addActionListener(e -> {
-            cmppAccountTableModel.fireTableDataChanged();
-        });
+        menuItem4.addActionListener(e -> cmppAccountTableModel.fireTableDataChanged());
         popupMenu.add(menuItem4);
         return popupMenu;
     }

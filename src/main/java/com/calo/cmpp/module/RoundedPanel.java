@@ -16,9 +16,9 @@ public class RoundedPanel extends JPanel {
         int height = getHeight();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setColor(getBackground());
-        g2d.fill(new RoundRectangle2D.Double(0, 0, width - 1, height - 1, arc, arc));
+        g2d.fill(new RoundRectangle2D.Double(5, 5, width - 10, height - 10, arc, arc));
         g2d.setColor(getForeground());
-        g2d.draw(new RoundRectangle2D.Double(0, 0, width - 1, height - 1, arc, arc));
+        g2d.draw(new RoundRectangle2D.Double(5, 5, width - 10, height - 10, arc, arc));
         g2d.dispose();
     }
 }

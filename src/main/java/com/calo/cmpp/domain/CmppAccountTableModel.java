@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -18,7 +19,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Getter
 public class CmppAccountTableModel extends AbstractTableModel {
 
-    private final String[] tableNames = {"编号", "名称", "地址", "端口", "协议", "账号", "密码", "码号", "速度", "连接", "最大连接"};
+    private final String[] tableNames = {"名称", "地址", "端口", "协议", "账号", "密码", "码号", "速度", "连接", "最大连接"};
 
     public CmppChannelAccount getAccount(Integer id) {
         return ChannelAccountManage.getAccount(id);
@@ -64,17 +65,16 @@ public class CmppAccountTableModel extends AbstractTableModel {
         }
         EndpointConnector<?> connector = EndpointManager.INS.getEndpointConnector(String.valueOf(cmppChannelAccount.getId()));
         return switch (columnIndex) {
-            case 0 -> cmppChannelAccount.getId();
-            case 1 -> cmppChannelAccount.getChannelName();
-            case 2 -> cmppChannelAccount.getHost();
-            case 3 -> cmppChannelAccount.getPort();
-            case 4 -> cmppChannelAccount.getVersion();
-            case 5 -> cmppChannelAccount.getUsername();
-            case 6 -> cmppChannelAccount.getPassword();
-            case 7 -> cmppChannelAccount.getSrcId();
-            case 8 -> cmppChannelAccount.getSpeed();
-            case 9 -> connector != null ? connector.getConnectionNum() : 0;
-            case 10 -> cmppChannelAccount.getMaxConnect();
+            case 0 -> cmppChannelAccount.getChannelName();
+            case 1 -> cmppChannelAccount.getHost();
+            case 2 -> cmppChannelAccount.getPort();
+            case 3 -> cmppChannelAccount.getVersion();
+            case 4 -> cmppChannelAccount.getUsername();
+            case 5 -> cmppChannelAccount.getPassword();
+            case 6 -> cmppChannelAccount.getSrcId();
+            case 7 -> cmppChannelAccount.getSpeed();
+            case 8 -> connector == null ? 0 : connector.getConnectionNum();
+            case 9 -> cmppChannelAccount.getMaxConnect();
             default -> null;
         };
     }

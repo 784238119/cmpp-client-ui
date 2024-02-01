@@ -23,8 +23,6 @@ public class CmppChannelAccount implements Serializable {
     private String srcId;
     private Integer speed = 200;
     private Integer maxConnect = 2;
-    private Integer connectCount = 0;
-
 
     @Override
     public String toString() {

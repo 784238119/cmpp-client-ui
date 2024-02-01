@@ -1,6 +1,7 @@
 package com.calo.cmpp.controller;
 
 
+import com.calo.cmpp.config.BusinessThreadPool;
 import com.calo.cmpp.domain.CmppChannelAccount;
 import com.calo.cmpp.domain.SendMessageGenerating;
 import com.calo.cmpp.enums.MobileType;
@@ -12,6 +13,9 @@ import io.micrometer.common.util.StringUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -24,7 +28,7 @@ import java.util.Objects;
 @Component
 public class SendParam extends RoundedPanel {
 
-    @Resource
+    @Autowired
     private SendQueueManage sendQueueManage;
 
     {
@@ -69,7 +73,7 @@ public class SendParam extends RoundedPanel {
         // 随机内容
         setRandomContent();
         setExtensionCode();
-        jPanel2.add(setNumberFixedSize(new JLabel("短信内容："), scrollPane, 600, 350));
+        jPanel2.add(setNumberFixedSize(new JLabel("短信内容："), scrollPane, 620, 350));
         jPanel2.add(randomContentCheckBox);
         this.add(jPanel2);
 
@@ -79,8 +83,8 @@ public class SendParam extends RoundedPanel {
         setSendSize();
         setGenerationSpeed();
         setContinuousGeneration();
-        jPanel3.add(setNumberFixedSize(new JLabel("发送数量："), sendNumberSizeField, 160, 30));
-        jPanel3.add(setNumberFixedSize(new JLabel("生成速度："), generationSpeed, 160, 30));
+        jPanel3.add(setNumberFixedSize(new JLabel("发送数量："), sendNumberSizeField, 170, 30));
+        jPanel3.add(setNumberFixedSize(new JLabel("生成速度："), generationSpeed, 170, 30));
         jPanel3.add(continuousGenerationCheckBox);
 
         JButton startButton = new JButton("发送");
@@ -89,6 +93,7 @@ public class SendParam extends RoundedPanel {
         setStopJButton(stopjButton);
         jPanel3.add(startButton);
         jPanel3.add(stopjButton);
+
         this.add(jPanel3);
     }
 
@@ -98,7 +103,7 @@ public class SendParam extends RoundedPanel {
 
     private void setStartButton(JButton startButton) {
         startButton.addActionListener(e -> {
-            if (sendAccountId == null) {
+            if (sendAccountId == null || ChannelAccountManage.getAccount(sendAccountId) == null) {
                 JOptionPane.showMessageDialog(null, "请选择发送账号", "提示", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -114,7 +119,7 @@ public class SendParam extends RoundedPanel {
                 JOptionPane.showMessageDialog(null, "请输入生成速度", "提示", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            new Thread(() -> sendQueueManage.generateSendMessage(new SendMessageGenerating(sendAccountId, mobile, mobileType, content, isRandomContent, extensionCode, continuousGeneration, sendSize, generationSpeedNum))).start();
+            BusinessThreadPool.getBusiGroup().execute(() -> sendQueueManage.generateSendMessage(new SendMessageGenerating(sendAccountId, mobile, mobileType, content, isRandomContent, extensionCode, continuousGeneration, sendSize, generationSpeedNum)));
         });
     }
 
@@ -181,8 +186,11 @@ public class SendParam extends RoundedPanel {
         contentTextArea.setLineWrap(true);
         contentTextArea.setWrapStyleWord(true);
         contentTextArea.setText(content);
+
         // 滚动条
         JScrollPane scrollPane = new JScrollPane(contentTextArea);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(238, 238, 238)));
+
         // 光标消失监听
         contentTextArea.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -220,10 +228,7 @@ public class SendParam extends RoundedPanel {
         initializeAccount();
         // 选择账号监听
         if (sendAccountId != null) {
-            comboBox.setSelectedIndex(sendAccountId);
-        }
-        if (comboBox.getItemCount() > 0) {
-            sendAccountId = ((CmppChannelAccount) Objects.requireNonNull(comboBox.getSelectedItem())).getId();
+            comboBox.setSelectedIndex(-1);
         }
         comboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {

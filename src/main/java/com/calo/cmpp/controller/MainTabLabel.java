@@ -3,21 +3,24 @@ package com.calo.cmpp.controller;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
-
 
 @Log4j2
 @Component
 public class MainTabLabel extends JTabbedPane {
 
-    @Resource
+    @Autowired
     private MainMonitorWin mainMonitor;
-    @Resource
+    @Autowired
     private SendParam sendParam;
-    @Resource
+    @Autowired
     private LogMonitor logMonitor;
+
     {
         this.setTabPlacement(JTabbedPane.TOP);
         this.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
@@ -29,7 +32,8 @@ public class MainTabLabel extends JTabbedPane {
         this.addTab("监控面板", mainMonitor);
         this.addTab("发送参数", sendParam);
         this.addTab("发送日志", logMonitor);
-        this.setSelectedIndex(2);
+        this.setSelectedIndex(0);
+
         // 切换标签页监听
         this.addChangeListener(e -> {
             if (this.getSelectedIndex() == 0) {

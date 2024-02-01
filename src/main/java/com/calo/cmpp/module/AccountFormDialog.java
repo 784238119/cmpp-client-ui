@@ -1,15 +1,17 @@
 package com.calo.cmpp.module;
 
+import com.calo.cmpp.controller.AccountForm;
 import com.calo.cmpp.domain.CmppAccountTableModel;
 import com.calo.cmpp.domain.CmppChannelAccount;
 import com.calo.cmpp.enums.Version;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
-
 
 @Log4j2
 public class AccountFormDialog {
@@ -26,8 +28,13 @@ public class AccountFormDialog {
         } else {
             dialog.setTitle("新增账号");
         }
-        dialog.setSize(400, 320);
-        dialog.setMinimumSize(new Dimension(420, 350));
+        dialog.setModal(true);
+        // 设置在最前面
+        dialog.setAlwaysOnTop(true);
+        // 设置跟随的窗口
+        dialog.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
+        dialog.setSize(400, 450);
+        dialog.setMinimumSize(new Dimension(400, 450));
 
         JPanel formPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();

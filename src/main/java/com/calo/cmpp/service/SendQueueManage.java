@@ -4,6 +4,7 @@ package com.calo.cmpp.service;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.log.Log;
+import com.calo.cmpp.controller.AccountForm;
 import com.calo.cmpp.controller.LogMonitor;
 import com.calo.cmpp.domain.CmppChannelAccount;
 import com.calo.cmpp.domain.SendMessageGenerating;
@@ -17,6 +18,9 @@ import com.zx.sms.connect.manager.EndpointManager;
 import jakarta.annotation.Resource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -26,13 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
-@Service
 @Log4j2
+@Service
 public class SendQueueManage {
 
-    @Resource
+    @Autowired
     private LogMonitor logMonitor;
-    @Resource
+    @Autowired
     private MonitorSendManage monitorSendManage;
     private static final Snowflake snowflake = IdUtil.getSnowflake(1, 1);
     private static boolean runGenerateStatus = false;
@@ -88,6 +92,7 @@ public class SendQueueManage {
     private void getMessageToSend(Integer sendAccountId) {
         LinkedBlockingQueue<SendMessageSubmit> queue = queueMap.get(sendAccountId);
         while (true) try {
+            long millis = System.currentTimeMillis();
             CmppChannelAccount channelAccount = ChannelAccountManage.getAccount(sendAccountId);
             if (channelAccount == null) {
                 log.info("没有这个账号！！！！！");
@@ -95,8 +100,12 @@ public class SendQueueManage {
                 return;
             }
             ArrayList<SendMessageSubmit> sendMessageSubmits = new ArrayList<>();
-            Queues.drain(queue, sendMessageSubmits, channelAccount.getSpeed(), 1, TimeUnit.SECONDS);
+            Queues.drain(queue, sendMessageSubmits, channelAccount.getSpeed() * channelAccount.getMaxConnect(), 1000, TimeUnit.MILLISECONDS);
             sendMessageSubmits.forEach(messageSubmit -> this.submitMessageSend(channelAccount, messageSubmit));
+            long sleepTime = 1000 - (System.currentTimeMillis() - millis);
+            if (sleepTime > 0) {
+                TimeUnit.MILLISECONDS.sleep(sleepTime);
+            }
         } catch (Exception e) {
             log.info("取出数据异常：{}", e.getMessage());
         }
@@ -107,22 +116,22 @@ public class SendQueueManage {
             CmppSubmitRequestMessage submitMessage = this.getCmppSubmitRequestMessage(cmppChannelAccount, sendMessageSubmit);
             EndpointConnector<?> managerEndpointConnector = EndpointManager.INS.getEndpointConnector(String.valueOf(cmppChannelAccount.getId()));
             if (managerEndpointConnector == null) {
-                monitorSendManage.delMsgId(1);
+                monitorSendManage.delFailureMsgId(1, sendMessageSubmit.getLocalMessageId());
                 throw new RuntimeException("通道未连接，通道号：{}" + cmppChannelAccount.getId());
             }
             List<CmppSubmitRequestMessage> cmppSubmitRequestMessages = ChannelUtil.splitLongSmsMessage(managerEndpointConnector.getEndpointEntity(), submitMessage);
             for (CmppSubmitRequestMessage cmppSubmitRequestMessage : cmppSubmitRequestMessages) {
                 if (managerEndpointConnector.getConnectionNum() == 0) {
-                    monitorSendManage.delMsgId(cmppSubmitRequestMessage.getSequenceNo());
-                    logMonitor.appendLog("提交失败短信，通道未连接：" + cmppSubmitRequestMessage);
+                    monitorSendManage.delFailureMsgId(cmppSubmitRequestMessage.getSequenceNo(), sendMessageSubmit.getLocalMessageId());
+                    logMonitor.appendLog("提交到网关失败，通道未连接：" + cmppSubmitRequestMessage);
                 } else {
                     monitorSendManage.addSequence(cmppSubmitRequestMessage.getSequenceNo(), sendMessageSubmit.getLocalMessageId());
-                    logMonitor.appendLog("提交发送短信：" + cmppSubmitRequestMessage);
+                    logMonitor.appendLog("提交到网关: " + cmppSubmitRequestMessage);
                     managerEndpointConnector.synwriteUncheck(cmppSubmitRequestMessage);
                 }
             }
         } catch (Exception e) {
-            logMonitor.appendLog("短信提交失败:" + sendMessageSubmit);
+            logMonitor.appendLog("提交到网关异常:" + sendMessageSubmit);
         }
     }
 

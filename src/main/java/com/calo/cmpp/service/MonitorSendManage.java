@@ -3,16 +3,13 @@ package com.calo.cmpp.service;
 import cn.hutool.cache.Cache;
 import cn.hutool.cache.CacheUtil;
 import cn.hutool.cache.impl.TimedCache;
-import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.util.IdUtil;
 import com.calo.cmpp.domain.SendMessageSubmit;
 import lombok.Getter;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.text.NumberFormat;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
 @Component
 public class MonitorSendManage {
@@ -36,81 +33,41 @@ public class MonitorSendManage {
     private volatile static long reportSpeed = 0;
     private volatile static long reportOffset = 0;
     @Getter
-    public final AtomicInteger messageCount = new AtomicInteger(0);
+    public final LongAdder messageCount = new LongAdder();
     @Getter
-    public final AtomicInteger submitsCount = new AtomicInteger(0);
+    public final LongAdder submitsCount = new LongAdder();
     @Getter
-    public final AtomicInteger failureCount = new AtomicInteger(0);
+    public final LongAdder responseSuccessCount = new LongAdder();
     @Getter
-    public final AtomicInteger successCount = new AtomicInteger(0);
+    public final LongAdder responseFailureCount = new LongAdder();
     @Getter
-    public final AtomicInteger answersCount = new AtomicInteger(0);
+    public final LongAdder sendFailureCount = new LongAdder();
     @Getter
-    public final AtomicInteger mistakeCount = new AtomicInteger(0);
-    @Getter
-    public final AtomicInteger sendsOKCount = new AtomicInteger(0);
+    public final LongAdder sendSuccessCount = new LongAdder();
 
     @Scheduled(fixedDelay = 1L, timeUnit = TimeUnit.SECONDS)
     public void calculateNumberRecordSecondSpeed() {
-        long submitsNewOffset = submitsCount.get();
+        long submitsNewOffset = submitsCount.longValue();
         submitSpeed = submitsNewOffset - submitOffset;
         submitOffset = submitsNewOffset;
 
-        long responseNewOffset = answersCount.get();
+        long responseNewOffset = responseSuccessCount.longValue() + responseFailureCount.longValue();
         responseSpeed = responseNewOffset - responseOffset;
         responseOffset = responseNewOffset;
 
-        long reportNewOffset = failureCount.get() + successCount.get();
+        long reportNewOffset = sendFailureCount.longValue() + sendSuccessCount.longValue();
         reportSpeed = reportNewOffset - reportOffset;
         reportOffset = reportNewOffset;
     }
 
     public void addMessage(SendMessageSubmit sendMessageSubmit) {
         messageCache.put(sendMessageSubmit.getLocalMessageId(), sendMessageSubmit);
-        messageCount.getAndAdd(sendMessageSubmit.getCount());
+        messageCount.add(sendMessageSubmit.getCount());
     }
 
     public void addSequence(int sequence, String localMessageId) {
-        submitsCount.incrementAndGet();
+        submitsCount.add(1);
         suiteCache.put(sequence, localMessageId);
-    }
-
-    public void addMsgId(int sequence, String msgId) {
-        String localMessageId = suiteCache.get(sequence);
-        if (localMessageId == null) {
-            return;
-        }
-        suiteCache.remove(sequence);
-        SendMessageSubmit sendMessageSubmit = messageCache.get(localMessageId);
-        if (sendMessageSubmit != null) {
-            sendMessageSubmit.getMsgId().add(msgId);
-        }
-        answersCount.incrementAndGet();
-        sendsOKCount.incrementAndGet();
-        msgIdCache.put(msgId, localMessageId);
-    }
-
-    public void delMsgId(int sequence) {
-        String localMessageId = suiteCache.get(sequence);
-        if (localMessageId == null) {
-            return;
-        }
-        suiteCache.remove(sequence);
-        mistakeCount.incrementAndGet();
-    }
-
-    public void delMsgId(int sequence, String msgId) {
-        String localMessageId = suiteCache.get(sequence);
-        if (localMessageId == null) {
-            return;
-        }
-        suiteCache.remove(sequence);
-        SendMessageSubmit sendMessageSubmit = messageCache.get(localMessageId);
-        if (sendMessageSubmit != null) {
-            sendMessageSubmit.getMsgId().add(msgId);
-        }
-        answersCount.incrementAndGet();
-        mistakeCount.incrementAndGet();
     }
 
     public void addReport(String msgId, String statusCode) {
@@ -121,11 +78,49 @@ public class MonitorSendManage {
         msgIdCache.remove(msgId);
         SendMessageSubmit sendMessageSubmit = messageCache.get(localMessageId);
         if ("DELIVRD".equals(statusCode)) {
-            successCount.getAndIncrement();
+            sendSuccessCount.add(1);
         } else {
-            failureCount.getAndIncrement();
+            sendFailureCount.add(1);
         }
         sendMessageSubmit.getStatus().add(statusCode);
         fifoCache.put(msgId, sendMessageSubmit);
+    }
+
+    public void addSuccessMsgId(int sequenceNo, String msgId) {
+        responseSuccessCount.add(1);
+        String localMessageId = suiteCache.get(sequenceNo);
+        if (localMessageId == null) {
+            return;
+        }
+        SendMessageSubmit sendMessageSubmit = messageCache.get(localMessageId);
+        if (sendMessageSubmit != null) {
+            sendMessageSubmit.getMsgId().add(msgId);
+            msgIdCache.put(msgId,sendMessageSubmit.getLocalMessageId());
+        }
+    }
+
+    public void delFailureMsgId(int sequenceNo, String msgId) {
+        suiteCache.remove(sequenceNo);
+        msgIdCache.remove(msgId);
+        responseFailureCount.add(1);
+    }
+
+    public void clearData() {
+        messageCount.reset();
+        submitsCount.reset();
+        responseSuccessCount.reset();
+        responseFailureCount.reset();
+        sendFailureCount.reset();
+        sendSuccessCount.reset();
+        submitSpeed = 0;
+        submitOffset = 0;
+        responseSpeed = 0;
+        responseOffset = 0;
+        reportSpeed = 0;
+        reportOffset = 0;
+        msgIdCache.clear();
+        suiteCache.clear();
+        fifoCache.clear();
+        messageCache.clear();
     }
 }

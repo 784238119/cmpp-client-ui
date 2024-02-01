@@ -51,6 +51,11 @@
             <artifactId>sms-core</artifactId>
             <version>2.1.13.5</version>
         </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.3</version>
+        </dependency>
     </dependencies>
 
 

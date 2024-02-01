@@ -8,11 +8,13 @@ import com.zx.sms.connect.manager.EndpointEntity;
 import com.zx.sms.connect.manager.EndpointManager;
 import com.zx.sms.connect.manager.cmpp.CMPPClientEndpointEntity;
 import com.zx.sms.handler.api.BusinessHandlerInterface;
+import lombok.Getter;
 import org.springframework.boot.SpringApplication;
 
 import javax.swing.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,8 +54,8 @@ public class ChannelAccountManage {
         client.setVersion(cmppAccount.getVersion().getValue());
         client.setRetryWaitTimeSec((short) 60);
         client.setUseSSL(false);
-        client.setWriteLimit(cmppAccount.getSpeed());
-        client.setReadLimit(cmppAccount.getSpeed());
+        client.setWriteLimit(cmppAccount.getSpeed() * 2);
+        client.setReadLimit(cmppAccount.getSpeed() * 2);
         client.setReSendFailMsg(false);
         client.setSupportLongmsg(EndpointEntity.SupportLongMessage.BOTH);
         client.setBusinessHandlerSet(List.of(SpringUtil.getBean(CmppSessionHandler.class)));
