@@ -3,8 +3,7 @@ package com.calo.cmpp.service;
 
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.log.Log;
-import com.calo.cmpp.controller.AccountForm;
+import com.calo.cmpp.config.BusinessThreadPool;
 import com.calo.cmpp.controller.LogMonitor;
 import com.calo.cmpp.domain.CmppChannelAccount;
 import com.calo.cmpp.domain.SendMessageGenerating;
@@ -15,20 +14,18 @@ import com.zx.sms.common.util.ChannelUtil;
 import com.zx.sms.common.util.StandardCharsets;
 import com.zx.sms.connect.manager.EndpointConnector;
 import com.zx.sms.connect.manager.EndpointManager;
-import jakarta.annotation.Resource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Service
@@ -85,8 +82,7 @@ public class SendQueueManage {
     }
 
     public void initConsumer(Integer sendAccountId) {
-        ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
-        executorService.execute(() -> getMessageToSend(sendAccountId));
+        BusinessThreadPool.getSendGroup().execute(() -> getMessageToSend(sendAccountId));
     }
 
     private void getMessageToSend(Integer sendAccountId) {

@@ -50,6 +50,7 @@ public class MainWindow {
         jframe.setLocation(x, y);
         jframe.setTitle("CMPP客户端");
         jframe.setIconImage(loadIconImage());
+
     }
 
     @PostConstruct
@@ -58,7 +59,6 @@ public class MainWindow {
         log.info("软件名称：{}", properties.getName());
         log.info("软件版本：{}", properties.getVersion());
         log.info("操作系统：{}", System.getProperty("os.name"));
-        // 获取默认的外观
         jframe.setVisible(true);
     }
 
