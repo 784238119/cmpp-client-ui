@@ -1,8 +1,6 @@
 package com.calo.cmpp.service;
 
 import com.calo.cmpp.enums.MobileType;
-import com.calo.cmpp.enums.OperateType;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Random;
 

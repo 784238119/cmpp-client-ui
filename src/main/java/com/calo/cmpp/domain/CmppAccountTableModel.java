@@ -1,20 +1,12 @@
 package com.calo.cmpp.domain;
 
-import com.calo.cmpp.enums.Version;
 import com.calo.cmpp.service.ChannelAccountManage;
 import com.zx.sms.connect.manager.EndpointConnector;
 import com.zx.sms.connect.manager.EndpointManager;
 import lombok.Getter;
-import org.springframework.stereotype.Service;
 
 import javax.swing.table.AbstractTableModel;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 @Getter
 public class CmppAccountTableModel extends AbstractTableModel {

@@ -4,16 +4,13 @@ package com.calo.cmpp.controller;
 import com.calo.cmpp.config.Properties;
 import com.formdev.flatlaf.FlatLightLaf;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.net.URL;

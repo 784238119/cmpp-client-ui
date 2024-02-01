@@ -1,13 +1,10 @@
 package com.calo.cmpp.module;
 
-import com.calo.cmpp.controller.AccountForm;
 import com.calo.cmpp.domain.CmppAccountTableModel;
 import com.calo.cmpp.domain.CmppChannelAccount;
 import com.calo.cmpp.enums.Version;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;

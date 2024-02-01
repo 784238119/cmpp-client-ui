@@ -1,7 +1,5 @@
 package com.calo.cmpp.service;
 
-import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.util.IdUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -11,8 +9,6 @@ import java.util.Random;
 public class MessageContentManage {
 
     private final static List<String> CONTENT_LIST = new ArrayList<>();
-
-    private static final Snowflake snowflake = IdUtil.getSnowflake(1, 1);
 
     private static final Random random = new Random();
 

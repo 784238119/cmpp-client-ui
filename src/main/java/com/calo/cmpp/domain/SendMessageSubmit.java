@@ -1,6 +1,5 @@
 package com.calo.cmpp.domain;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
