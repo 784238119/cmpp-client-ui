@@ -129,6 +129,7 @@ public class SendParam extends RoundedPanel {
         continuousGenerationCheckBox.addItemListener(e -> {
             continuousGeneration = e.getStateChange() == ItemEvent.SELECTED;
         });
+        sendNumberSizeField.setToolTipText("持续生成消息配合生成速度一起工作");
     }
 
     private void setGenerationSpeed() {
@@ -144,6 +145,7 @@ public class SendParam extends RoundedPanel {
                 }
             }
         });
+        generationSpeed.setToolTipText("生成速度，单位毫秒");
     }
 
     private void setSendSize() {
@@ -160,6 +162,7 @@ public class SendParam extends RoundedPanel {
                 }
             }
         });
+        sendNumberSizeField.setToolTipText("请输入一个批次发送数量");
     }
 
     private void setExtensionCode() {
@@ -171,6 +174,7 @@ public class SendParam extends RoundedPanel {
                 extensionCode = extensionCodeTextField.getText();
             }
         });
+        sendNumberSizeField.setToolTipText("发送短信的扩展码号");
     }
 
     private void setRandomContent() {
@@ -179,6 +183,7 @@ public class SendParam extends RoundedPanel {
         randomContentCheckBox.addItemListener(e -> {
             isRandomContent = e.getStateChange() == ItemEvent.SELECTED;
         });
+        sendNumberSizeField.setToolTipText("随机内容，每次发送内容不一样(和内容文本框互斥)");
     }
 
     private JScrollPane setSMSContent() {
@@ -211,6 +216,7 @@ public class SendParam extends RoundedPanel {
                 mobileType = (MobileType) e.getItem();
             }
         });
+
     }
 
     private void setPhoneNumber() {
@@ -222,6 +228,7 @@ public class SendParam extends RoundedPanel {
                 mobile = mobileTextField.getText();
             }
         });
+        mobileTextField.setToolTipText("请输入手机号码");
     }
 
     private void setAccountSelection() {
@@ -236,6 +243,7 @@ public class SendParam extends RoundedPanel {
                 sendAccountId = account.getId();
             }
         });
+
     }
 
     public void initializeAccount() {
