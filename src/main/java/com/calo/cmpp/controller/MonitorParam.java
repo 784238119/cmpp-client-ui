@@ -4,12 +4,8 @@ import com.calo.cmpp.config.BusinessThreadPool;
 import com.calo.cmpp.module.RoundedPanel;
 import com.calo.cmpp.service.MonitorSendManage;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -17,8 +13,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.NumberFormat;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Log4j2
@@ -110,44 +104,46 @@ public class MonitorParam extends RoundedPanel implements MonitorWin {
     }
 
     public void refreshData() {
-        int messageNum = monitorSendManage.getMessageCount().intValue();
-        int submitsNum = monitorSendManage.getSubmitsCount().intValue();
+        SwingUtilities.invokeLater(() -> {
+            int messageNum = monitorSendManage.getMessageCount().intValue();
+            int submitsNum = monitorSendManage.getSubmitsCount().intValue();
 
-        int submitSuccessNum = monitorSendManage.getResponseSuccessCount().intValue();
-        int submitFailureNum = monitorSendManage.getResponseFailureCount().intValue();
-        int responseNum = submitSuccessNum + submitFailureNum;
+            int submitSuccessNum = monitorSendManage.getResponseSuccessCount().intValue();
+            int submitFailureNum = monitorSendManage.getResponseFailureCount().intValue();
+            int responseNum = submitSuccessNum + submitFailureNum;
 
-        int sendSuccessNum = monitorSendManage.getSendSuccessCount().intValue();
-        int sendFailureNum = monitorSendManage.getSendFailureCount().intValue();
-        int reportNum = sendSuccessNum + sendFailureNum;
-        int sendUnknownNum = reportNum - (sendSuccessNum + sendFailureNum);
+            int sendSuccessNum = monitorSendManage.getSendSuccessCount().intValue();
+            int sendFailureNum = monitorSendManage.getSendFailureCount().intValue();
+            int reportNum = sendSuccessNum + sendFailureNum;
+            int sendUnknownNum = reportNum - (sendSuccessNum + sendFailureNum);
 
-        // 保留两位小数
-        String responseRate = (responseNum == 0 ? "00.00" : BigDecimal.valueOf((double) responseNum / submitsNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
-        String reportingRate = (reportNum == 0 ? "00.00" : BigDecimal.valueOf((double) reportNum / submitSuccessNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
-        String successRate = (sendSuccessNum == 0 ? "00.00" : BigDecimal.valueOf((double) sendSuccessNum / reportNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
-        String failureRate = (sendFailureNum == 0 ? "00.00" : BigDecimal.valueOf((double) sendFailureNum / reportNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
-        String unknownRate = (sendUnknownNum == 0 ? "00.00" : BigDecimal.valueOf((double) sendUnknownNum / reportNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
+            // 保留两位小数
+            String responseRate = (responseNum == 0 ? "00.00" : BigDecimal.valueOf((double) responseNum / submitsNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
+            String reportingRate = (reportNum == 0 ? "00.00" : BigDecimal.valueOf((double) reportNum / submitSuccessNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
+            String successRate = (sendSuccessNum == 0 ? "00.00" : BigDecimal.valueOf((double) sendSuccessNum / reportNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
+            String failureRate = (sendFailureNum == 0 ? "00.00" : BigDecimal.valueOf((double) sendFailureNum / reportNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
+            String unknownRate = (sendUnknownNum == 0 ? "00.00" : BigDecimal.valueOf((double) sendUnknownNum / reportNum * 100.00).setScale(2, RoundingMode.HALF_UP).toString()) + "%";
 
-        this.submitMessageCount.setText(String.valueOf(messageNum));
-        this.submitSuccessCount.setText(String.valueOf(submitsNum));
-        this.submitFailureCount.setText(String.valueOf(submitFailureNum));
-        this.responseCount.setText(String.valueOf(responseNum));
-        this.responseSuccessCount.setText(String.valueOf(submitSuccessNum));
-        this.reportCount.setText(String.valueOf(reportNum));
-        this.sendSuccessCount.setText(String.valueOf(sendSuccessNum));
-        this.sendFailureCount.setText(String.valueOf(sendFailureNum));
-        this.sendUnknownCount.setText(String.valueOf(sendUnknownNum));
+            this.submitMessageCount.setText(String.valueOf(messageNum));
+            this.submitSuccessCount.setText(String.valueOf(submitsNum));
+            this.submitFailureCount.setText(String.valueOf(submitFailureNum));
+            this.responseCount.setText(String.valueOf(responseNum));
+            this.responseSuccessCount.setText(String.valueOf(submitSuccessNum));
+            this.reportCount.setText(String.valueOf(reportNum));
+            this.sendSuccessCount.setText(String.valueOf(sendSuccessNum));
+            this.sendFailureCount.setText(String.valueOf(sendFailureNum));
+            this.sendUnknownCount.setText(String.valueOf(sendUnknownNum));
 
-        this.submissionSpeed.setText(MonitorSendManage.getSubmitSpeed() + "/s");
-        this.responseSpeed.setText(MonitorSendManage.getResponseSpeed() + "/s");
-        this.reportSpeed.setText(MonitorSendManage.getReportSpeed() + "/s");
+            this.submissionSpeed.setText(MonitorSendManage.getSubmitSpeed() + "/s");
+            this.responseSpeed.setText(MonitorSendManage.getResponseSpeed() + "/s");
+            this.reportSpeed.setText(MonitorSendManage.getReportSpeed() + "/s");
 
-        this.responseRate.setText(responseRate);
-        this.reportRate.setText(reportingRate);
-        this.sendSuccessRate.setText(successRate);
-        this.sendFailureRate.setText(failureRate);
-        this.sendUnknownRate.setText(unknownRate);
+            this.responseRate.setText(responseRate);
+            this.reportRate.setText(reportingRate);
+            this.sendSuccessRate.setText(successRate);
+            this.sendFailureRate.setText(failureRate);
+            this.sendUnknownRate.setText(unknownRate);
+        });
     }
 
 

@@ -5,13 +5,14 @@ import cn.hutool.core.date.DateTime;
 import com.calo.cmpp.module.RoundedPanel;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @Log4j2
 @Component
@@ -20,7 +21,7 @@ public class LogMonitor extends RoundedPanel implements MonitorWin {
     private final JTextArea logTextArea = new JTextArea();
     private final JScrollPane logScrollPane = new JScrollPane(logTextArea);
     // 链表，用于存储日志
-    private final List<String> logList = new CopyOnWriteArrayList<>();
+    private final BlockingQueue<String> logQueue = new LinkedBlockingQueue<>(1000);
 
     {
         this.setBorder(new EmptyBorder(5, 5, 5, 0));
@@ -34,14 +35,14 @@ public class LogMonitor extends RoundedPanel implements MonitorWin {
         logTextArea.setLineWrap(true);
         logTextArea.setWrapStyleWord(true);
         logTextArea.setFont(new Font("微软雅黑", Font.PLAIN, 14));
-        logTextArea.setBackground(new Color(242,242,242));
+        logTextArea.setBackground(new Color(242, 242, 242));
         // 显示最下面
         logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
         // 设置光标颜色
-        logTextArea.setCaretColor(new Color(242,242,242));
+        logTextArea.setCaretColor(new Color(242, 242, 242));
         // 去除边框
-        logScrollPane.setBorder(BorderFactory.createLineBorder(new Color(242,242,242)));
-        logTextArea.setBorder(BorderFactory.createLineBorder(new Color(242,242,242)));
+        logScrollPane.setBorder(BorderFactory.createLineBorder(new Color(242, 242, 242)));
+        logTextArea.setBorder(BorderFactory.createLineBorder(new Color(242, 242, 242)));
         // 滚动时才显示滚动条
         logScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         // 设置首选大小，以及文本区域的行数
@@ -58,7 +59,7 @@ public class LogMonitor extends RoundedPanel implements MonitorWin {
         JMenuItem clearItem2 = new JMenuItem("设置换行");
 
         clearItem1.addActionListener(e -> {
-            logList.clear();
+            logQueue.clear();
             logTextArea.setText("");
         });
         clearItem2.addActionListener(e -> {
@@ -77,16 +78,31 @@ public class LogMonitor extends RoundedPanel implements MonitorWin {
 
     public void appendLog(String log) {
         String logText = "[" + DateTime.now().toString("yyyy-MM-dd HH:mm:ss") + "] " + log + "\n";
-        if(logList.size() > 5000) {
-            logList.removeFirst();
+        // 如果队列已满，移除头部元素
+        if (!logQueue.offer(logText)) {
+            logQueue.poll();
+            logQueue.offer(logText);
         }
-        logList.add(logText);
-        logTextArea.append(logText);
-        // 显示最下面
-        logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
     }
+
+    @Scheduled(fixedDelay = 500)
+    public void changeLog() throws InterruptedException {
+        SwingUtilities.invokeLater(() -> {
+            StringBuilder logText = new StringBuilder();
+            logQueue.forEach(logText::append);
+            logTextArea.setText(logText.toString());
+            // 显示最下面
+            logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
+        });
+    }
+
 
     @Override
     public void refreshPageRendering() {
+        try {
+            changeLog();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

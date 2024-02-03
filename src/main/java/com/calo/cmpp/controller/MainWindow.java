@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.geom.RoundRectangle2D;
-import java.net.URL;
 
 @Log4j2
 @Component
@@ -49,7 +49,7 @@ public class MainWindow {
         int y = (screenSize.height - jframe.getHeight()) / 2;
         jframe.setLocation(x, y);
         jframe.setTitle("CMPP客户端");
-        jframe.setIconImage(loadIconImage());
+        setShortcutKey();
     }
 
     @PostConstruct
@@ -58,17 +58,7 @@ public class MainWindow {
         log.info("软件名称：{}", properties.getName());
         log.info("软件版本：{}", properties.getVersion());
         log.info("操作系统：{}", System.getProperty("os.name"));
-        // 获取默认的外观
         jframe.setVisible(true);
-    }
-
-    private static Image loadIconImage() {
-        ClassLoader classLoader = MainWindow.class.getClassLoader();
-        URL imageUrl = classLoader.getResource("resources/images/icon.png");
-        if (imageUrl == null) {
-            return null;
-        }
-        return new ImageIcon(imageUrl).getImage();
     }
 
     // 设置全局的圆角边框
@@ -76,6 +66,19 @@ public class MainWindow {
         UIManager.put("TextField.border", new RoundedBorder());
         UIManager.put("ComboBox.border", new RoundedBorder());
         UIManager.put("TextArea.border", new RoundedBorder());
+    }
+
+    // 设置快捷键缩小化 command + m
+    private static void setShortcutKey() {
+        Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
+            if (event.getID() == KeyEvent.KEY_PRESSED) {
+                KeyEvent keyEvent = (KeyEvent) event;
+                if (keyEvent.getKeyCode() == KeyEvent.VK_M && keyEvent.isMetaDown()) {
+                    // 如果最小化则恢复
+                    jframe.setExtendedState(JFrame.ICONIFIED);
+                }
+            }
+        }, AWTEvent.KEY_EVENT_MASK);
     }
 
     // 自定义圆角边框

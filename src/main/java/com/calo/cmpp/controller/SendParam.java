@@ -1,7 +1,6 @@
 package com.calo.cmpp.controller;
 
 
-import com.calo.cmpp.config.BusinessThreadPool;
 import com.calo.cmpp.domain.CmppChannelAccount;
 import com.calo.cmpp.domain.SendMessageGenerating;
 import com.calo.cmpp.enums.MobileType;
@@ -11,10 +10,7 @@ import com.calo.cmpp.service.ChannelAccountManage;
 import com.calo.cmpp.service.SendQueueManage;
 import io.micrometer.common.util.StringUtils;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +18,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.util.Objects;
 
 @Log4j2
 @Component
@@ -119,16 +114,14 @@ public class SendParam extends RoundedPanel {
                 JOptionPane.showMessageDialog(null, "请输入生成速度", "提示", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            BusinessThreadPool.getBusiGroup().execute(() -> sendQueueManage.generateSendMessage(new SendMessageGenerating(sendAccountId, mobile, mobileType, content, isRandomContent, extensionCode, continuousGeneration, sendSize, generationSpeedNum)));
+            new Thread(() -> sendQueueManage.generateSendMessage(new SendMessageGenerating(sendAccountId, mobile, mobileType, content, isRandomContent, extensionCode, continuousGeneration, sendSize, generationSpeedNum))).start();
         });
     }
 
     private void setContinuousGeneration() {
         continuousGenerationCheckBox.setSelected(false);
         continuousGenerationCheckBox.setMinimumSize(new Dimension(40, 40));
-        continuousGenerationCheckBox.addItemListener(e -> {
-            continuousGeneration = e.getStateChange() == ItemEvent.SELECTED;
-        });
+        continuousGenerationCheckBox.addItemListener(e -> continuousGeneration = e.getStateChange() == ItemEvent.SELECTED);
         sendNumberSizeField.setToolTipText("持续生成消息配合生成速度一起工作");
     }
 
@@ -180,9 +173,7 @@ public class SendParam extends RoundedPanel {
     private void setRandomContent() {
         randomContentCheckBox.setSelected(isRandomContent);
         randomContentCheckBox.setMinimumSize(new Dimension(50, 40));
-        randomContentCheckBox.addItemListener(e -> {
-            isRandomContent = e.getStateChange() == ItemEvent.SELECTED;
-        });
+        randomContentCheckBox.addItemListener(e -> isRandomContent = e.getStateChange() == ItemEvent.SELECTED);
         sendNumberSizeField.setToolTipText("随机内容，每次发送内容不一样(和内容文本框互斥)");
     }
 
