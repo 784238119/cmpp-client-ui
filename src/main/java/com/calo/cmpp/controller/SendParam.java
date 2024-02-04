@@ -98,7 +98,8 @@ public class SendParam extends RoundedPanel {
 
     private void setStartButton(JButton startButton) {
         startButton.addActionListener(e -> {
-            if (sendAccountId == null || ChannelAccountManage.getAccount(sendAccountId) == null) {
+            CmppChannelAccount account = ChannelAccountManage.getAccount(sendAccountId);
+            if (sendAccountId == null || account == null) {
                 JOptionPane.showMessageDialog(null, "请选择发送账号", "提示", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -112,6 +113,10 @@ public class SendParam extends RoundedPanel {
             }
             if (generationSpeedNum == null || generationSpeedNum <= 0) {
                 JOptionPane.showMessageDialog(null, "请输入生成速度", "提示", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            int isOK = JOptionPane.showConfirmDialog(null, "确定需要使用 [" + account.getChannelName() + "]", "提示", JOptionPane.DEFAULT_OPTION);
+            if (isOK == -1) {
                 return;
             }
             new Thread(() -> sendQueueManage.generateSendMessage(new SendMessageGenerating(sendAccountId, mobile, mobileType, content, isRandomContent, extensionCode, continuousGeneration, sendSize, generationSpeedNum))).start();
@@ -225,9 +230,6 @@ public class SendParam extends RoundedPanel {
     private void setAccountSelection() {
         initializeAccount();
         // 选择账号监听
-        if (sendAccountId != null) {
-            comboBox.setSelectedIndex(-1);
-        }
         comboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 CmppChannelAccount account = (CmppChannelAccount) e.getItem();

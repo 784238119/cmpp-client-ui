@@ -77,7 +77,7 @@ public class MonitorParam extends RoundedPanel implements MonitorWin {
         // 添加右键菜单
         this.setComponentPopupMenu(createPopupMenu());
 
-        BusinessThreadPool.getBusiGroup().scheduleAtFixedRate(this::refreshData, 0, 1000, TimeUnit.MILLISECONDS);
+        BusinessThreadPool.getBusiGroup().scheduleAtFixedRate(this::refreshData, 0, 50, TimeUnit.MILLISECONDS);
     }
 
     private JPopupMenu createPopupMenu() {

@@ -16,7 +16,7 @@ public class CmppChannelAccount implements Serializable {
     private String channelName;
     private String host;
     private String port = "7890";
-    private Version version = Version.CMPP20;
+    private Version version = Version.CMPP30;
     private String username;
     private String password;
     private String srcId;

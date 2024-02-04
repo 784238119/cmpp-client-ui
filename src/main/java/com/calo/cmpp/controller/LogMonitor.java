@@ -85,7 +85,7 @@ public class LogMonitor extends RoundedPanel implements MonitorWin {
         }
     }
 
-    @Scheduled(fixedDelay = 500)
+    @Scheduled(fixedDelay = 100)
     public void changeLog() throws InterruptedException {
         SwingUtilities.invokeLater(() -> {
             StringBuilder logText = new StringBuilder();

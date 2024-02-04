@@ -15,16 +15,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ChannelAccountManage {
 
-    private static final Map<Integer,CmppChannelAccount> account = new ConcurrentHashMap<>();
+    private static final Map<Integer, CmppChannelAccount> account = new ConcurrentHashMap<>();
 
     public synchronized static void addAccount(CmppChannelAccount cmppChannelAccount) {
-        if (cmppChannelAccount.getId() != null && account.get(cmppChannelAccount.getId()) != null) {
-            removeAccount(cmppChannelAccount.getId());
-            account.put(cmppChannelAccount.getId(), cmppChannelAccount);
-        } else {
-            cmppChannelAccount.setId(account.size());
-            account.put(cmppChannelAccount.getId(), cmppChannelAccount);
-        }
+        cmppChannelAccount.setId(cmppChannelAccount.getId() != null ? cmppChannelAccount.getId() : account.size());
+        removeAccount(cmppChannelAccount.getId());
+        account.put(cmppChannelAccount.getId(), cmppChannelAccount);
         EndpointEntity cmppClient = getCmppClient(cmppChannelAccount);
         EndpointManager.INS.openEndpoint(cmppClient);
     }
@@ -45,6 +41,7 @@ public class ChannelAccountManage {
         client.setCloseWhenRetryFailed(false);
         client.setVersion(cmppAccount.getVersion().getValue());
         client.setRetryWaitTimeSec((short) 60);
+        client.setMaxRetryCnt((short) 0);
         client.setUseSSL(false);
         client.setWriteLimit(cmppAccount.getSpeed() * 2);
         client.setReadLimit(cmppAccount.getSpeed() * 2);

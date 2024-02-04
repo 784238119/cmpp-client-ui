@@ -78,6 +78,7 @@ public class AccountForm extends JScrollPane implements MonitorWin {
             FileUtil.touch(file);
         }
         log.info("channel account db path:{}", file.getAbsolutePath());
+        log.info("channel account db data:{}", stringSet);
         FileUtil.appendLines(stringSet, file, Charset.defaultCharset());
     }
 
@@ -152,6 +153,12 @@ public class AccountForm extends JScrollPane implements MonitorWin {
         JMenuItem menuItem4 = new JMenuItem("刷新账号");
         menuItem4.addActionListener(e -> cmppAccountTableModel.fireTableDataChanged());
         popupMenu.add(menuItem4);
+
+        // 保存账号
+        JMenuItem menuItem5 = new JMenuItem("保存账号");
+        menuItem5.addActionListener(e -> this.saveAccount());
+        popupMenu.add(menuItem5);
+
         return popupMenu;
     }
 

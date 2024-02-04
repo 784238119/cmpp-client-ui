@@ -51,9 +51,9 @@ public class AccountFormDialog {
         portField.setText(cmppChannelAccount.getPort());
         portField.setPreferredSize(new Dimension(200, hostField.getPreferredSize().height));
 
-        JComboBox<Version> versionField = new JComboBox<>(new Version[]{Version.CMPP30, Version.CMPP20});
+        JComboBox<Version> versionField = new JComboBox<>(new Version[]{Version.CMPP20, Version.CMPP30});
         versionField.setPreferredSize(new Dimension(200, hostField.getPreferredSize().height));
-        versionField.setSelectedItem(Objects.requireNonNullElse(cmppChannelAccount.getVersion(), Version.CMPP30));
+        versionField.setSelectedItem(Objects.requireNonNullElse(cmppChannelAccount.getVersion(), Version.CMPP20));
 
         JTextField usernameField = new JTextField(cmppChannelAccount.getUsername());
         usernameField.setPreferredSize(new Dimension(200, hostField.getPreferredSize().height));

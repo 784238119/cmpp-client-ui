@@ -7,5 +7,5 @@
 
 打包MacOS
 ```shell
- jpackage --type dmg --name CmppClient --input ~/Desktop --main-jar target/cmpp-ui.jar  --main-class org.springframework.boot.loader.launch.JarLauncher --icon target/classes/images/cmpp.icns --app-version 1.0.0 --mac-package-name CmppClient --mac-package-identifier com.calo.cmpp.CmppClient --input ./   --java-options '--enable-preview' --verbose
+jpackage --type dmg --name CmppClient --main-jar /Users/calo/Develop/DevelopJavaProject/cmpp-ui/target/cmpp-ui.jar --main-class org.springframework.boot.loader.launch.JarLauncher --icon /Users/calo/Develop/DevelopJavaProject/cmpp-ui/target/classes/images/CmppClient.icns --app-version 1.0.0 --mac-package-name CmppClient --mac-package-identifier com.calo.cmpp.CmppClient --input ~/Desktop --java-options '--enable-preview' --verbose
 ```
